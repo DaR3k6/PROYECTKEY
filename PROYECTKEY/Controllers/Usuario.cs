@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PROYECTKEY.Modelo;
-
+using System;
+using System.Net;
+using System.Text;
 namespace PROYECTKEY.Controllers
 {
     /// <summary>
@@ -23,28 +25,25 @@ namespace PROYECTKEY.Controllers
       
         [HttpPost]
         [Route("usuario/registrarUsuario")]
-        public HttpResponseMessage registrarUsuario(string nombreUsuario, string apellido, string email, string password, int idRol)
+        public ContentResult RegistrarUsuario(string nombreUsuario, string apellido, string email, string password, int idRol)
         {
             string respuesta = ClaseUsuario.RegistrarUsuario(nombreUsuario, apellido, email, password, idRol);
 
-            // Crea una respuesta HTTP
-            var response = new HttpResponseMessage();
+            dynamic jsonResponse = JsonConvert.DeserializeObject(respuesta);
 
-            if (respuesta.Contains("éxito"))
+            if (jsonResponse != null && jsonResponse.status == true)
             {
-                // Código 200 si el registro es exitoso
-                response.StatusCode = System.Net.HttpStatusCode.OK;
+                // Registro exitoso
+                var json = JsonConvert.SerializeObject(jsonResponse);
+                return Content(json, "application/json");
             }
             else
             {
-                // Código 400 si hay un error en el registro
-                response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                // Error en el registro
+                Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                var json = JsonConvert.SerializeObject(jsonResponse);
+                return Content(json, "application/json");
             }
-
-            // Agrega el contenido JSON a la respuesta
-            response.Content = new StringContent(respuesta, System.Text.Encoding.UTF8, "application/json");
-
-            return response;
         }
 
         /// <summary>
@@ -57,28 +56,28 @@ namespace PROYECTKEY.Controllers
         /// <returns>Respuesta de registro.</returns>
         [HttpPost]
         [Route("vendedor/registrarVendedor")]
-        public HttpResponseMessage registrarVendedor(string documento, string nombre, DateTime fechaNacimiento, int usuarioId)
+        public ContentResult registrarVendedor(string documento, string nombre, DateTime fechaNacimiento, int usuarioId)
         {
             string respuesta = ClaseUsuario.RegistrarVendedor(documento, nombre, fechaNacimiento, usuarioId);
 
-            // Crea una respuesta HTTP
-            var response = new HttpResponseMessage();
 
-            if (respuesta.Contains("éxito"))
+            dynamic jsonResponse = JsonConvert.DeserializeObject(respuesta);
+
+
+            if (jsonResponse != null && jsonResponse.status == true)
             {
-                // Código 200 si el registro es exitoso
-                response.StatusCode = System.Net.HttpStatusCode.OK;
+                // Registro exitoso
+                var json = JsonConvert.SerializeObject(jsonResponse);
+                return Content(json, "application/json");
             }
             else
             {
-                // Código 400 si hay un error en el registro
-                response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                // Error en el registro
+                Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                var json = JsonConvert.SerializeObject(jsonResponse);
+                return Content(json, "application/json");
             }
 
-            // Agrega el contenido JSON a la respuesta
-            response.Content = new StringContent(respuesta, System.Text.Encoding.UTF8, "application/json");
-
-            return response;
         }
 
         /// <summary>
@@ -89,28 +88,23 @@ namespace PROYECTKEY.Controllers
         /// <returns>Respuesta de inicio de sesión.</returns>
         [HttpPost]
         [Route("usuario/login")]
-        public HttpResponseMessage usuarioLogin(string email, string password)
+        public ContentResult usuarioLogin( string email, string password)
         {
             dynamic respuesta = ClaseUsuario.LoginUsuario(email, password);
-
-            // Crea una respuesta HTTP
-            var response = new HttpResponseMessage();
-
+                
             if (respuesta != null && respuesta.status == true)
             {
                 // Código 200 si el inicio de sesión es exitoso
-                response.StatusCode = System.Net.HttpStatusCode.OK;
+                var json = JsonConvert.SerializeObject(respuesta);
+                return Content(json, "application/json");
             }
             else
             {
                 // Código 400 si hay un error en el inicio de sesión
-                response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                var json = JsonConvert.SerializeObject(respuesta);
+                return Content(json, "application/json");
             }
-
-            // Agrega el contenido JSON a la respuesta
-            response.Content = new StringContent(JsonConvert.SerializeObject(respuesta), System.Text.Encoding.UTF8, "application/json");
-
-            return response;
         }
 
         /// <summary>
@@ -120,28 +114,23 @@ namespace PROYECTKEY.Controllers
         /// <returns>Información detallada del usuario.</returns>
         [HttpGet]
         [Route("informacion/usuario/{id}")]
-        public HttpResponseMessage InformacionUsuario(int id)
+        public ContentResult InformacionUsuario(int id)
         {
             dynamic respuesta = ClaseUsuario.InformacionUsuario(id);
-
-            // Crea una respuesta HTTP
-            var response = new HttpResponseMessage();
-            
-            if (respuesta != null)
+ 
+            if (respuesta != null && respuesta.status == true)
             {
-                // Código 200 si se obtiene la información correctamente
-                response.StatusCode = System.Net.HttpStatusCode.OK; 
+                // Código 200 si el inicio de sesión es exitoso
+                var json = JsonConvert.SerializeObject(respuesta);
+                return Content(json, "application/json");
             }
             else
             {
-                // Código 400 si hay un error en la obtención de información
-                response.StatusCode = System.Net.HttpStatusCode.BadRequest; 
+                // Código 400 si hay un error en el inicio de sesión
+                Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                var json = JsonConvert.SerializeObject(respuesta);
+                return Content(json, "application/json");
             }
-
-            // Agrega el contenido JSON a la respuesta
-            response.Content = new StringContent(JsonConvert.SerializeObject(respuesta), System.Text.Encoding.UTF8, "application/json");
-
-            return response;
         }
        
 

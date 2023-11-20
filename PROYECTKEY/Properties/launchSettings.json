@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "APIBiblioteca": {
+    "APIKEY": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",

@@ -74,7 +74,16 @@ namespace PROYECTKEY.Modelo
                     return JsonConvert.SerializeObject(new
                     {
                         mensaje = $"Usuario registrado con éxito. ID de usuario: {idUsuario}",
-                        status = true
+                        status = true,
+                        usuario = new
+                        {
+                            id = idUsuario,
+                            nombre = nombreUsuario,
+                            apellido = apellido,
+                            email = email,
+                            password = hashedPassword,
+                            idRol = idRol
+                        }
                     });
                 }
                 else if (idUsuario == -1)
@@ -191,10 +200,11 @@ namespace PROYECTKEY.Modelo
                         DataTable table = new DataTable();
                         adapter.Fill(table);
 
+
                         if (table.Rows.Count > 0)
                         {
                             DataRow row = table.Rows[0];
-                            string hashedPasswordFromDB = row["Contraseña"].ToString();                           // Verifica la contraseña
+                            string hashedPasswordFromDB = row["Contraseña"].ToString();
                             string hashedPasswordInput = HashPassword(password);
 
                             // Cambia la comparación para usar Equals
@@ -207,6 +217,9 @@ namespace PROYECTKEY.Modelo
                                     usuario = new
                                     {
                                         id = row["idUsuario"],
+                                        email,
+                                        password = hashedPasswordInput,
+
                                     }
                                 };
                             }
@@ -258,16 +271,35 @@ namespace PROYECTKEY.Modelo
                         DataTable table = new DataTable();
                         adapter.Fill(table);
 
+
                         if (table.Rows.Count > 0)
                         {
                             DataRow row = table.Rows[0];
-                            dynamic result = row[0];
-                            Console.WriteLine(JsonConvert.SerializeObject(result));
-                            return result;
+
+                            return new
+                            {
+                                mensaje = "Información del usuario obtenida con éxito",
+                                status = true,
+                                usuario = new
+                                {
+                                    id = row["idUsuario"],
+                                    nombre = row["Nombre"],
+                                    apellido = row["Apellido"],
+                                    email = row["Email"],
+                                    password = row["Contraseña"],
+                                    rol = row["Rol_idRol"]
+
+                                }
+                            };
+
                         }
                         else
                         {
-                            return null;
+                            return new
+                            {
+                                mensaje = "Usuario no encontrado",
+                                status = false
+                            };
                         }
                     }
                 }
