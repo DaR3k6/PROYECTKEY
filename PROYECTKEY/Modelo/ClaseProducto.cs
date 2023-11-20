@@ -48,18 +48,22 @@ namespace PROYECTKEY.Modelo
                         }
                         else
                         {
-                            Console.WriteLine("Producto agregado con éxito");
+
                             return new
                             {
+                                mensaje = "Producto agregado con éxito",
                                 status = true,
-                                idProducto,
-                                nombre,
-                                descripcion,
-                                precio,
-                                stock,
-                                vendedor_idVendedor,
-                                categoria_idCategoria,
-                                imagen = Convert.ToBase64String(imagen)
+                                producto = new
+                                {
+                                    idProducto,
+                                    nombre,
+                                    descripcion,
+                                    precio,
+                                    stock,
+                                    vendedor_idVendedor,
+                                    categoria_idCategoria,
+                                    imagen = Convert.ToBase64String(imagen)
+                                }
                             };
                         }
                     }
@@ -103,16 +107,29 @@ namespace PROYECTKEY.Modelo
                         if (resultado == 0)
                         {
                             Console.WriteLine("Producto actualizado con éxito");
-                            return new { status = true, mensaje = "Producto actualizado con éxito" };
+                            return new
+                            {
+                                status = true,
+                                mensaje = "Producto actualizado con éxito",
+                                producto = new
+                                {
+                                    idProducto,
+                                    nombre,
+                                    descripcion,
+                                    precio,
+                                    stock,
+                                    vendedor_idVendedor,
+                                    categoria_idCategoria,
+                                    imagen = Convert.ToBase64String(imagen)
+                                }
+                            };
                         }
                         else if (resultado == 1)
                         {
-                            Console.WriteLine("Error: Producto no encontrado");
                             return new { status = false, mensaje = "Error: Producto no encontrado" };
                         }
                         else
                         {
-                            Console.WriteLine("Error en la operación");
                             return new { status = false, mensaje = "Error en la operación" };
                         }
                     }
@@ -166,7 +183,7 @@ namespace PROYECTKEY.Modelo
                                 });
                             }
 
-                            return new { status = true, mensaje = "Productos encontrados con éxito", productos };
+                            return new { status = true, mensaje = "Productos encontrados con éxito", producto = new { productos } };
                         }
                         else
                         {
@@ -192,15 +209,12 @@ namespace PROYECTKEY.Modelo
                 {
                     connection.Open();
 
-                    using (SqlDataAdapter adapter = new SqlDataAdapter("dbo.EliminarProductoPorId", connection))
+                    using (SqlCommand command = new SqlCommand("dbo.EliminarProductoPorId", connection))
                     {
-                        adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
-                        adapter.SelectCommand.Parameters.AddWithValue("@idProducto", idProducto);
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@idProducto", idProducto);
 
-                        DataTable dataTable = new DataTable();
-                        adapter.Fill(dataTable);
-
-                        int rowsAffected = dataTable.Rows.Count;
+                        int rowsAffected = command.ExecuteNonQuery();
 
                         if (rowsAffected > 0)
                         {
@@ -221,7 +235,6 @@ namespace PROYECTKEY.Modelo
                 return new { mensaje = "Error al eliminar el producto", status = false, error = error.Message };
             }
         }
-
         // FUNCION DE TRAER TODOS LOS PRODUCTOS
         public static dynamic TodosProductos()
         {
@@ -261,7 +274,7 @@ namespace PROYECTKEY.Modelo
                                 });
                             }
 
-                            return new { mensaje = "Productos obtenidos con éxito", status = true, productos };
+                            return new { mensaje = "Productos obtenidos con éxito", status = true, productos = new { productos } };
                         }
                         else
                         {
@@ -303,22 +316,14 @@ namespace PROYECTKEY.Modelo
 
                             foreach (DataRow row in dataTable.Rows)
                             {
-                                byte[] imagenBytes = (byte[])row["Imagen"];
-                                string imagenBase64 = Convert.ToBase64String(imagenBytes);
                                 productos.Add(new
                                 {
-                                    idProducto = row["idProducto"],
-                                    nombre = row["Nombre"],
-                                    descripcion = row["Descripcion"],
-                                    precio = row["Precio"],
-                                    stock = row["Stock"],
-                                    vendedor_idVendedor = row["Vendedor_idVendedor"],
-                                    categoria_idCategoria = row["Categoria_idCategoria"],
-                                    imagen = imagenBase64
+                                    id = row["idCategoria"],
+                                    nombre = row["Nombre"]
                                 });
                             }
 
-                            return new { mensaje = "Categoría obtenida con éxito", status = true, productos };
+                            return new { mensaje = "Categoría obtenida con éxito", status = true, categroia = new { productos } };
                         }
                         else
                         {

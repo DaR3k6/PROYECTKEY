@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PROYECTKEY.Controllers
 {
@@ -16,7 +17,7 @@ namespace PROYECTKEY.Controllers
     /// <summary>
     /// Controlador para la gestión de productos.
     /// </summary>
-    public class ProductoController : Controller
+    public class Producto : Controller
     {
         /// <summary>
         /// Agrega o actualiza un producto con la información proporcionada.
@@ -31,19 +32,18 @@ namespace PROYECTKEY.Controllers
         /// <returns>Respuesta HTTP con el resultado.</returns>
         [HttpPost]
         [Route("producto/agregarProducto")]
-        public HttpResponseMessage AgregarProducto(string nombre, string descripcion, decimal precio, int stock, int vendedor_idVendedor, int categoria_idCategoria, IFormFile imagen)
+        public ContentResult AgregarProducto(string nombre, string descripcion, decimal precio, int stock, int vendedor_idVendedor, int categoria_idCategoria, IFormFile imagen)
         {
             try
             {
                 // Validaciones
                 if (string.IsNullOrEmpty(nombre) || precio <= 0)
                 {
-                    return new HttpResponseMessage(HttpStatusCode.BadRequest)
+                    return new ContentResult
                     {
-                        Content = new StringContent(
-                            "Datos de producto no válidos",
-                            Encoding.UTF8,
-                            "application/json")
+                        StatusCode = (int)HttpStatusCode.BadRequest,
+                        Content = JsonConvert.SerializeObject(new { status = false, mensaje = "Datos de producto no válidos" }),
+                        ContentType = "application/json"
                     };
                 }
 
@@ -62,37 +62,36 @@ namespace PROYECTKEY.Controllers
                 dynamic respuesta = ClaseProducto.AgregarProducto(nombre, descripcion, precio, stock, vendedor_idVendedor, categoria_idCategoria, imagenBytes);
 
                 // Crea una respuesta HTTP
-                var response = new HttpResponseMessage();
+                var response = new ContentResult();
 
                 if (respuesta.status == true)
                 {
                     // Código 200 si el registro es exitoso
-                    response.StatusCode = HttpStatusCode.OK;
-                    var jsonResponse = JsonConvert.SerializeObject(respuesta);
-                    response.Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json");
+                    response.StatusCode = (int)HttpStatusCode.OK;
+                    response.Content = JsonConvert.SerializeObject(respuesta);
+                    response.ContentType = "application/json";
                 }
                 else
                 {
                     // Código 400 si hay un error en el registro
-                    response.StatusCode = HttpStatusCode.BadRequest;
-                    var jsonResponse = JsonConvert.SerializeObject(new { status = false, mensaje = "Error en la operación" });
-                    response.Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json");
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Content = JsonConvert.SerializeObject(new { status = false, mensaje = "Error en la operación" });
+                    response.ContentType = "application/json";
                 }
 
                 return response;
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("Error en la ruta para agregar producto: " + e.Message);
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                 return new ContentResult
                 {
-                    Content = new StringContent(
-                        $"Error al agregar producto: {e.Message}",
-                        Encoding.UTF8,
-                        "application/json")
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Content = JsonConvert.SerializeObject(new { status = false, mensaje = $"Error al agregar producto: {e.Message}" }),
+                    ContentType = "application/json"
                 };
             }
         }
+
 
         /// <summary>
         /// Actualiza un producto existente.
@@ -108,19 +107,20 @@ namespace PROYECTKEY.Controllers
         /// <returns>Respuesta HTTP con el resultado.</returns>  
         [HttpPut]
         [Route("producto/actualizar/{id}")]
-        public HttpResponseMessage ActualizarProducto(int id, string nombre, string descripcion, decimal precio, int stock, int vendedor_idVendedor, int categoria_idCategoria, IFormFile imagen)
+        public ContentResult ActualizarProducto(int id, string nombre, string descripcion, decimal precio, int stock, int vendedor_idVendedor, int categoria_idCategoria, IFormFile imagen)
         {
             try
             {
+                
                 // Validaciones
                 if (id <= 0 || string.IsNullOrEmpty(nombre) || precio <= 0)
                 {
-                    return new HttpResponseMessage(HttpStatusCode.BadRequest)
+                    return new ContentResult
                     {
-                        Content = new StringContent(
-                            "Datos de producto no válidos",
-                            Encoding.UTF8,
-                            "application/json")
+
+                        StatusCode = (int)HttpStatusCode.BadRequest,
+                        Content = JsonConvert.SerializeObject(new { status = false, mensaje = "Datos de producto no válidos" }),
+                        ContentType = "application/json"
                     };
                 }
 
@@ -138,31 +138,34 @@ namespace PROYECTKEY.Controllers
                 // Llama al modelo para agregar o actualizar el producto
                 dynamic respuesta = ClaseProducto.ActualizarProducto(id, nombre, descripcion, precio, stock, vendedor_idVendedor, categoria_idCategoria, imagenBytes);
 
+
                 // Crea una respuesta HTTP
-                var response = new HttpResponseMessage();
+                var response = new ContentResult();
 
                 if (respuesta.status == true)
                 {
-                    // Código 200 si la actualización es exitosa
-                    response.StatusCode = HttpStatusCode.OK;
+                    // Código 200 si el registro es exitoso
+                    response.StatusCode = (int)HttpStatusCode.OK;
+                    response.Content = JsonConvert.SerializeObject(respuesta);
+                    response.ContentType = "application/json";
                 }
                 else
                 {
-                    // Código 400 si hay un error en la actualización
-                    response.StatusCode = HttpStatusCode.BadRequest;
+                    // Código 400 si hay un error en el registro
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Content = JsonConvert.SerializeObject(new { status = false, mensaje = "Error en la operación" });
+                    response.ContentType = "application/json";
                 }
 
                 return response;
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("Error en la ruta para actualizar producto: " + e.Message);
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                return new ContentResult
                 {
-                    Content = new StringContent(
-                        $"Error al actualizar producto: {e.Message}",
-                        Encoding.UTF8,
-                        "application/json")
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Content = JsonConvert.SerializeObject(new { status = false, mensaje = $"Error al actualizar el producto: {e.Message}" }),
+                    ContentType = "application/json"
                 };
             }
         }
@@ -174,46 +177,43 @@ namespace PROYECTKEY.Controllers
         /// <returns>Respuesta HTTP con el resultado.</returns>
         [HttpGet]
         [Route("producto/buscarProducto/{nombre}")]
-        public HttpResponseMessage TraerProductosPorNombre(string nombre)
+        public ContentResult TraerProductosPorNombre(string nombre)
         {
             try
             {
                 dynamic respuesta = ClaseProducto.TraerProductosPorNombre(nombre);
 
                 // Crea una respuesta HTTP
-                var response = new HttpResponseMessage();
+                var response = new ContentResult();
 
                 if (respuesta.status == true)
                 {
-                    var jsonResponse = JsonConvert.SerializeObject(respuesta);
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json")
-                    };
+                    // Código 200 si el registro es exitoso
+                    response.StatusCode = (int)HttpStatusCode.OK;
+                    response.Content = JsonConvert.SerializeObject(respuesta);
+                    response.ContentType = "application/json";
                 }
                 else
                 {
-                    var jsonResponse = JsonConvert.SerializeObject(new { status = false, mensaje = "Error en la operación" });
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.BadRequest,
-                        Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json")
-                    };
+                    // Código 400 si hay un error en el registro
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Content = JsonConvert.SerializeObject(new { status = false, mensaje = "Error: no se encontró el nombre" });
+                    response.ContentType = "application/json";
                 }
+
+                return response; 
             }
             catch (Exception e)
             {
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                return new ContentResult
                 {
-                    Content = new StringContent(
-                        $"Error al actualizar producto: {e.Message}",
-                        Encoding.UTF8,
-                        "application/json")
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Content = JsonConvert.SerializeObject(new { status = false, mensaje = $"Error al buscar el producto por nombre: {e.Message}" }),
+                    ContentType = "application/json"
                 };
             }
-
         }
+
         /// <summary>
         /// Trae todos los datos del producto
         /// </summary>
@@ -221,39 +221,39 @@ namespace PROYECTKEY.Controllers
         [HttpGet]
         [Route("producto/todosProductos")]
 
-        public HttpResponseMessage TodosProductos()
+        public ContentResult TodosProductos()
         {
             try
             {
                 dynamic respuesta = ClaseProducto.TodosProductos();
 
-                var response = new HttpResponseMessage();
+                // Crea una respuesta HTTP
+                var response = new ContentResult();
 
                 if (respuesta.status == true)
                 {
-                    // Código 200 si se obtiene la información correctamente
-                    response.StatusCode = HttpStatusCode.OK;
-                    var jsonResponse = JsonConvert.SerializeObject(respuesta);
-                    response.Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json");
+                    // Código 200 si el registro es exitoso
+                    response.StatusCode = (int)HttpStatusCode.OK;
+                    response.Content = JsonConvert.SerializeObject(respuesta);
+                    response.ContentType = "application/json";
                 }
                 else
                 {
-                    // Código 400 si hay un error en la obtención de información
-                    response.StatusCode = HttpStatusCode.BadRequest;
-                    var jsonResponse = JsonConvert.SerializeObject(new { status = false, mensaje = "Error en la operación" });
-                    response.Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json");
+                    // Código 400 si hay un error en el registro
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Content = JsonConvert.SerializeObject(new { status = false, mensaje = "Error: no se encontró todos los productos" });
+                    response.ContentType = "application/json";
                 }
 
                 return response;
             }
             catch (Exception e)
             {
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                return new ContentResult
                 {
-                    Content = new StringContent(
-                         $"Error al obtener todos los productos: {e.Message}",
-                         Encoding.UTF8,
-                         "application/json")
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Content = JsonConvert.SerializeObject(new { status = false, mensaje = $"Error al obtener los productos: {e.Message}" }),
+                    ContentType = "application/json"
                 };
             }
         }
@@ -265,39 +265,39 @@ namespace PROYECTKEY.Controllers
         [HttpGet]
         [Route("producto/filtrarPorCategoria/{nombreCategoria}")]
 
-        public HttpResponseMessage FiltrarPorCategoria(string nombreCategoria)
+        public ContentResult FiltrarPorCategoria(string nombreCategoria)
         {
             try
             {
                 dynamic respuesta = ClaseProducto.FiltrarPorCategoria(nombreCategoria);
 
-                var response = new HttpResponseMessage();
+                // Crea una respuesta HTTP
+                var response = new ContentResult();
 
                 if (respuesta.status == true)
                 {
-                    // Código 200 si se obtiene la información correctamente
-                    response.StatusCode = HttpStatusCode.OK;
-                    var jsonResponse = JsonConvert.SerializeObject(respuesta);
-                    response.Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json");
+                    // Código 200 si el registro es exitoso
+                    response.StatusCode = (int)HttpStatusCode.OK;
+                    response.Content = JsonConvert.SerializeObject(respuesta);
+                    response.ContentType = "application/json";
                 }
                 else
                 {
-                    // Código 400 si hay un error en la obtención de información
-                    response.StatusCode = HttpStatusCode.BadRequest;
-                    var jsonResponse = JsonConvert.SerializeObject(new { status = false, mensaje = "Error en la operación" });
-                    response.Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json");
+                    // Código 400 si hay un error en el registro
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Content = JsonConvert.SerializeObject(new { status = false, mensaje = "Error: no se encontró la categoria del producto" });
+                    response.ContentType = "application/json";
                 }
 
                 return response;
             }
             catch (Exception e)
             {
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                return new ContentResult
                 {
-                    Content = new StringContent(
-                      $"Error al filtrar productos por categoría: {e.Message}",
-                      Encoding.UTF8,
-                      "application/json")
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Content = JsonConvert.SerializeObject(new { status = false, mensaje = $"Error al obtener filtrar por categoria: {e.Message}" }),
+                    ContentType = "application/json"
                 };
 
             }
@@ -310,28 +310,29 @@ namespace PROYECTKEY.Controllers
         [HttpDelete]
         [Route("producto/eliminar/{idProducto}")]
 
-        public HttpResponseMessage EliminarProducto(int idProducto)
+        public ContentResult EliminarProducto(int idProducto)
         {
             try
             {
                 dynamic respuesta = ClaseProducto.EliminarProductoId(idProducto);
 
                 // Crea una respuesta HTTP
-                var response = new HttpResponseMessage();
+                var response = new ContentResult();
 
                 if (respuesta.status == true)
                 {
-                    // Código 200 si se elimina el producto correctamente
-                    response.StatusCode = HttpStatusCode.OK;
-                    var jsonResponse = JsonConvert.SerializeObject(respuesta);
-                    response.Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json");
+                    // Código 200 si el registro es exitoso
+                    response.StatusCode = (int)HttpStatusCode.OK;
+                    response.Content = JsonConvert.SerializeObject(respuesta);
+                    response.ContentType = "application/json";
                 }
                 else
                 {
-                    // Código 400 si hay un error en la eliminación
-                    response.StatusCode = HttpStatusCode.BadRequest;
-                    var jsonResponse = JsonConvert.SerializeObject(new { status = false, mensaje = "Error en la operación" });
-                    response.Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json");
+
+                    // Código 400 si hay un error en el registro
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Content = JsonConvert.SerializeObject(new { status = false, mensaje = "Error: no sé puedo eliminar el producto" });
+                    response.ContentType = "application/json";
                 }
 
                 return response;
@@ -339,12 +340,11 @@ namespace PROYECTKEY.Controllers
             }
             catch (Exception e)
             {
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                return new ContentResult
                 {
-                    Content = new StringContent(
-                      $"Error al eliminar producto: {e.Message}",
-                      Encoding.UTF8,
-                      "application/json")
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Content = JsonConvert.SerializeObject(new { status = false, mensaje = $"Error al eliminar el producto: {e.Message}" }),
+                    ContentType = "application/json"
                 };
             }
         }
