@@ -17,7 +17,7 @@ namespace PROYECTKEY.Controllers
     /// <summary>
     /// Controlador para la gestión de productos.
     /// </summary>
-    public class Producto : Controller
+    public class Producto : ControllerBase
     {
         /// <summary>
         /// Agrega o actualiza un producto con la información proporcionada.
@@ -257,6 +257,7 @@ namespace PROYECTKEY.Controllers
                 };
             }
         }
+
         /// <summary>
         /// Trae el nombre de la categoria 
         /// </summary>
@@ -302,6 +303,7 @@ namespace PROYECTKEY.Controllers
 
             }
         }
+
         /// <summary>
         /// Elimina todo el producto
         /// </summary>

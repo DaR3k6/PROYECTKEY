@@ -1,5 +1,7 @@
 ﻿using System.Data.SqlClient;
 using System.Data;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Net.Sockets;
 
 
 namespace PROYECTKEY.Modelo
@@ -7,7 +9,8 @@ namespace PROYECTKEY.Modelo
     public class ClaseDetalle
     {
         //CADENA DE CONEXION 
-        public static string cadena = "Server=(local)\\BDSQL;Database=PROYECT_KEY;User Id=kevin;Password=12345;";
+        //public static string cadena = "Server=(local)\\BDSQL;Database=PROYECT_KEY;User Id=kevin;Password=12345;";
+         public static string cadena = "Server=APIKEYLOOKEY.mssql.somee.com\r\n;Database=APIKEYLOOKEY;User Id=Derek_SQLLogin_1;Password=w3smbf9an6;";
 
         public static string expecion = "";
 

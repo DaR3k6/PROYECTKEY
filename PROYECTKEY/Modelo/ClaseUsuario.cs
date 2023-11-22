@@ -11,7 +11,9 @@ namespace PROYECTKEY.Modelo
     public class ClaseUsuario
     {
         //CADENA DE CONEXION 
+        //public static string cadena = "Server=APIKEYLOOKEY.mssql.somee.com\r\n;Database=APIKEYLOOKEY;User Id=Derek_SQLLogin_1;Password=w3smbf9an6;";
         public static string cadena = "Server=(local)\\BDSQL;Database=PROYECT_KEY;User Id=kevin;Password=12345;";
+
 
         public static string expecion = "";
 
@@ -117,72 +119,89 @@ namespace PROYECTKEY.Modelo
             }
         }
 
-        //FUNCION DEL REGISTRAR VENDEDOR LLENA UN FORMULARIO
-        public static string RegistrarVendedor(string documento, string nombre, DateTime fechaNacimiento, int usuarioId)
+        // FUNCIÓN PARA ACTUALIZAR EL USUARIO
+        public static dynamic ActualizarUsuario(int idUsuario, string nombreUsuario, string apellido, string email, string password, int idRol)
         {
+            int idUsuarioActualizado = 0;
+            bool correoExiste = false;
+
             try
             {
+                string hashedPassword = string.IsNullOrEmpty(password) ? null : HashPassword(password);
+
                 using (SqlConnection connection = new SqlConnection(cadena))
                 {
                     connection.Open();
 
-                    using (SqlDataAdapter adapter = new SqlDataAdapter("RegistrarVendedor", connection))
+                    using (SqlDataAdapter adapter = new SqlDataAdapter("EditarUsuario", connection))
                     {
                         adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
-                        adapter.SelectCommand.Parameters.AddWithValue("@documento", documento);
-                        adapter.SelectCommand.Parameters.AddWithValue("@nombre", nombre);
-                        adapter.SelectCommand.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento);
-                        adapter.SelectCommand.Parameters.AddWithValue("@usuarioId", usuarioId);
+                        adapter.SelectCommand.Parameters.AddWithValue("@idUsuario", idUsuario);
+                        adapter.SelectCommand.Parameters.AddWithValue("@nombre", nombreUsuario);
+                        adapter.SelectCommand.Parameters.AddWithValue("@apellido", apellido);
+                        adapter.SelectCommand.Parameters.AddWithValue("@email", string.IsNullOrEmpty(email) ? (object)DBNull.Value : email);
+                        adapter.SelectCommand.Parameters.AddWithValue("@password", hashedPassword);
+                        adapter.SelectCommand.Parameters.AddWithValue("@idRol", idRol != null ? (object)idRol : DBNull.Value);
+                        adapter.SelectCommand.Parameters.Add("@idUsuarioOutput", SqlDbType.BigInt).Direction = ParameterDirection.Output;
+                        adapter.SelectCommand.Parameters.Add("@correoExiste", SqlDbType.Bit).Direction = ParameterDirection.Output;
 
-                        adapter.SelectCommand.Parameters.Add("@idGenerado", SqlDbType.BigInt).Direction = ParameterDirection.Output;
-                        adapter.SelectCommand.Parameters.Add("@registroExitoso", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                        DataTable table = new DataTable();
+                        adapter.Fill(table);
 
-                        adapter.SelectCommand.ExecuteNonQuery();
-
-                        long idGenerado = Convert.ToInt64(adapter.SelectCommand.Parameters["@idGenerado"].Value);
-                        bool registroExitoso = Convert.ToBoolean(adapter.SelectCommand.Parameters["@registroExitoso"].Value);
-
-                        if (registroExitoso == true)
-                        {
-                            Console.WriteLine("El proceso de registro fue exitoso.");
-                            return JsonConvert.SerializeObject(new
-                            {
-                                mensaje = "éxito",
-                                status = true,
-                                vendedor = new
-                                {
-                                    id = idGenerado,
-                                    documento,
-                                    nombre,
-                                    fechaNacimiento,
-                                    usuarioId
-                                }
-                            });
-                        }
-                        else
-                        {
-                            Console.WriteLine("El proceso de registro falló.");
-                            return JsonConvert.SerializeObject(new
-                            {
-                                status = false,
-                                mensaje = "Error al registrar el vendedor."
-                            });
-                        }
+                        // Recupera los parámetros de salida
+                        idUsuarioActualizado = Convert.ToInt32(adapter.SelectCommand.Parameters["@idUsuarioOutput"].Value);
+                        correoExiste = Convert.ToBoolean(adapter.SelectCommand.Parameters["@correoExiste"].Value);
                     }
+                }
+
+                if (correoExiste)
+                {
+                    return new
+                    {
+                        mensaje = "El correo ya existe",
+                        status = false
+                    };
+                }
+
+                // Valida y devuelve el resultado
+                if (idUsuarioActualizado != 0)
+                {
+                    return new
+                    {
+                        mensaje = $"Usuario actualizado con éxito. ID de usuario: {idUsuario}",
+                        status = true,
+                        usuario = new
+                        {
+                            id = idUsuario,
+                            nombre = nombreUsuario,
+                            apellido = apellido,
+                            email = email,
+                            password = hashedPassword,
+                            idRol = idRol
+                        }
+                    };
+                }
+                else
+                {
+                    return new
+                    {
+                        mensaje = "El usuario no pudo ser actualizado.",
+                        status = false,
+                        error = "Error en la actualización"
+                    };
                 }
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("Error al registrar el vendedor: " + e.Message);
-                return JsonConvert.SerializeObject(new
+                // Manejo de excepciones
+                return new
                 {
+                    mensaje = $"Error al actualizar el usuario: {e.Message}",
                     status = false,
-                    mensaje = "Error al registrar el vendedor",
                     error = e.Message
-                });
+                };
             }
         }
-
         //FUNCION DE LOGIN PARA INICAR QUE TIPO DE ROL ES 'VENDEDOR O CLIENTE'
         public static dynamic LoginUsuario(string email, string password)
         {
@@ -204,6 +223,7 @@ namespace PROYECTKEY.Modelo
                         if (table.Rows.Count > 0)
                         {
                             DataRow row = table.Rows[0];
+
                             string hashedPasswordFromDB = row["Contraseña"].ToString();
                             string hashedPasswordInput = HashPassword(password);
 
@@ -218,6 +238,7 @@ namespace PROYECTKEY.Modelo
                                     {
                                         id = row["idUsuario"],
                                         email,
+                                        nombre = row["Nombre"],
                                         password = hashedPasswordInput,
 
                                     }
@@ -263,7 +284,7 @@ namespace PROYECTKEY.Modelo
                 {
                     connection.Open();
 
-                    using (SqlDataAdapter adapter = new SqlDataAdapter("dbo.TraerInformacioUsuario", connection))
+                    using (SqlDataAdapter adapter = new SqlDataAdapter("dbo.[ListarTodosUsuarios]", connection))
                     {
                         adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
                         adapter.SelectCommand.Parameters.AddWithValue("@id", id);
@@ -278,7 +299,7 @@ namespace PROYECTKEY.Modelo
 
                             return new
                             {
-                                mensaje = "Información del usuario obtenida con éxito",
+                                mensaje = "Información todos los usuarios obtenidos",
                                 status = true,
                                 usuario = new
                                 {
@@ -290,6 +311,68 @@ namespace PROYECTKEY.Modelo
                                     rol = row["Rol_idRol"]
 
                                 }
+                            };
+                        }
+                        else
+                        {
+                            return new
+                            {
+                                mensaje = "Usuario no encontrado",
+                                status = false
+                            };
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("Error al obtener la información del usuario: " + e.Message);
+                return new
+                {
+                    mensaje = "Error al obtener la información del usuario",
+                    status = false
+                };
+            }
+        }
+
+        //FUNCION TRAER TODOS LOS USUARIOS
+        public static dynamic ListarTodosUsuarios()
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(cadena))
+                {
+                    connection.Open();
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter("dbo.ListarTodosUsuarios", connection))
+                    {
+                        adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+                        DataTable table = new DataTable();
+                        adapter.Fill(table);
+
+
+                        if (table.Rows.Count > 0)
+                        {
+                            List<dynamic> usuarios = new List<dynamic>();
+
+                            foreach (DataRow row in table.Rows)
+                            {
+                                usuarios.Add(new
+                                {
+                                    id = row["idUsuario"],
+                                    nombre = row["Nombre"],
+                                    apellido = row["Apellido"],
+                                    email = row["Email"],
+                                    password = row["Contraseña"],
+                                    rol = row["Rol_idRol"]
+                                });
+                            }
+
+                            return new
+                            {
+                                mensaje = "Información de usuarios obtenida con éxito",
+                                status = true,
+                                usuarios = usuarios
                             };
 
                         }
@@ -314,6 +397,114 @@ namespace PROYECTKEY.Modelo
                 };
             }
         }
+
+        //FUNCION DE TAER LOS ROLES
+        public static dynamic TraerRoles()
+        {
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(cadena))
+                {
+                    connection.Open();
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter("dbo.TraerRoles", connection))
+                    {
+                        adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+                        DataTable table = new DataTable();
+                        adapter.Fill(table);
+
+
+                        if (table.Rows.Count > 0)
+                        {
+                            List<dynamic> roles = new List<dynamic>();
+
+                            foreach (DataRow row in table.Rows)
+                            {
+                                roles.Add(new
+                                {
+                                    id = row["idRol"],
+                                    nombre = row["Nombre"],
+                                });
+                            }
+
+                            return new
+                            {
+                                mensaje = "Información de roles obtenida con éxito",
+                                status = true,
+                                roles = roles
+                            };
+
+                        }
+                        else
+                        {
+                            return new
+                            {
+                                mensaje = "Rol no encontrado",
+                                status = false
+                            };
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("Error al obtener la información del usuario: " + e.Message);
+                return new
+                {
+                    mensaje = "Error al obtener la información del rol",
+                    status = false
+                };
+            }
+        }
+
+
+        //FUNCION DE ELIMINAR UN USUARIO
+        public static dynamic EliminarUsuarioId(int idUsuario)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(cadena))
+                {
+                    connection.Open();
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter("dbo.EliminarUsuario", connection))
+                    {
+                        adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+                        adapter.SelectCommand.Parameters.AddWithValue("@idUsuario", idUsuario);
+
+                        // Agrega el parámetro de salida para capturar el resultado del procedimiento almacenado
+                        SqlParameter resultadoParam = new SqlParameter("@resultado", SqlDbType.Int);
+                        resultadoParam.Direction = ParameterDirection.Output;
+                        adapter.SelectCommand.Parameters.Add(resultadoParam);
+
+                        // Crea un DataTable para almacenar los resultados del procedimiento almacenado
+                        DataTable table = new DataTable();
+                        adapter.Fill(table);
+
+                        // Recupera el valor del parámetro de salida
+                        int resultado = Convert.ToInt32(resultadoParam.Value);
+
+                        // Verifica el resultado
+                        if (resultado == 0)
+                        {
+                            return new { mensaje = "Usuario eliminado con éxito", status = true };
+                        }
+                        else
+                        {
+                            return new { mensaje = "El usuario no existe o no fue eliminado", status = false };
+                        }
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                Console.WriteLine("Error al eliminar el usuario: " + error.Message);
+                return new { mensaje = "Error al eliminar el usuario", status = false, error = error.Message };
+            }
+        }
+
+
 
     }
 }

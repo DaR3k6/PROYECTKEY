@@ -7,7 +7,7 @@ namespace PROYECTKEY.Modelo
     public static class ClaseProducto
     {
         //CADENA DE CONEXION 
-        public static string cadena = "Server=(local)\\BDSQL;Database=PROYECT_KEY;User Id=kevin;Password=12345;";
+        public static string cadena = "Server=APIKEYLOOKEY.mssql.somee.com\r\n;Database=APIKEYLOOKEY;User Id=Derek_SQLLogin_1;Password=w3smbf9an6;";
 
         public static string expecion = "";
 
@@ -235,6 +235,7 @@ namespace PROYECTKEY.Modelo
                 return new { mensaje = "Error al eliminar el producto", status = false, error = error.Message };
             }
         }
+   
         // FUNCION DE TRAER TODOS LOS PRODUCTOS
         public static dynamic TodosProductos()
         {
