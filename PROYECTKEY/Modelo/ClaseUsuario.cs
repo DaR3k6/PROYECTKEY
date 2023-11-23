@@ -11,8 +11,9 @@ namespace PROYECTKEY.Modelo
     public class ClaseUsuario
     {
         //CADENA DE CONEXION 
-        //public static string cadena = "Server=APIKEYLOOKEY.mssql.somee.com\r\n;Database=APIKEYLOOKEY;User Id=Derek_SQLLogin_1;Password=w3smbf9an6;";
-        public static string cadena = "Server=(local)\\BDSQL;Database=PROYECT_KEY;User Id=kevin;Password=12345;";
+        public static string cadena = "Server=PPROYECT_KEY.mssql.somee.com\r\n;Database=PROYECT_KEY\r\n;User Id=Derek_SQLLogin_1;Password=w3smbf9an6;";
+        
+        //public static string cadena = "Server=(local)\\BDSQL;Database=PROYECT_KEY;User Id=kevin;Password=12345;";
 
 
         public static string expecion = "";
@@ -120,14 +121,13 @@ namespace PROYECTKEY.Modelo
         }
 
         // FUNCIÓN PARA ACTUALIZAR EL USUARIO
-        public static dynamic ActualizarUsuario(int idUsuario, string nombreUsuario, string apellido, string email, string password, int idRol)
+       public static dynamic ActualizarUsuario(int idUsuario, string nombreUsuario, string apellido, string email, string password, int idRol)
         {
-            int idUsuarioActualizado = 0;
-            bool correoExiste = false;
+            int resultado = 0;
 
             try
             {
-                string hashedPassword = string.IsNullOrEmpty(password) ? null : HashPassword(password);
+                string hashedPassword = HashPassword(password);
 
                 using (SqlConnection connection = new SqlConnection(cadena))
                 {
@@ -139,32 +139,20 @@ namespace PROYECTKEY.Modelo
                         adapter.SelectCommand.Parameters.AddWithValue("@idUsuario", idUsuario);
                         adapter.SelectCommand.Parameters.AddWithValue("@nombre", nombreUsuario);
                         adapter.SelectCommand.Parameters.AddWithValue("@apellido", apellido);
-                        adapter.SelectCommand.Parameters.AddWithValue("@email", string.IsNullOrEmpty(email) ? (object)DBNull.Value : email);
+                        adapter.SelectCommand.Parameters.AddWithValue("@email", email);
                         adapter.SelectCommand.Parameters.AddWithValue("@password", hashedPassword);
-                        adapter.SelectCommand.Parameters.AddWithValue("@idRol", idRol != null ? (object)idRol : DBNull.Value);
-                        adapter.SelectCommand.Parameters.Add("@idUsuarioOutput", SqlDbType.BigInt).Direction = ParameterDirection.Output;
-                        adapter.SelectCommand.Parameters.Add("@correoExiste", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                        adapter.SelectCommand.Parameters.AddWithValue("@idRol", idRol);
+                        adapter.SelectCommand.Parameters.Add("@resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
 
                         DataTable table = new DataTable();
                         adapter.Fill(table);
 
-                        // Recupera los parámetros de salida
-                        idUsuarioActualizado = Convert.ToInt32(adapter.SelectCommand.Parameters["@idUsuarioOutput"].Value);
-                        correoExiste = Convert.ToBoolean(adapter.SelectCommand.Parameters["@correoExiste"].Value);
+                        // Recupera el resultado de la ejecución del procedimiento almacenado
+                        resultado = Convert.ToInt32(adapter.SelectCommand.Parameters["@resultado"].Value);
                     }
                 }
 
-                if (correoExiste)
-                {
-                    return new
-                    {
-                        mensaje = "El correo ya existe",
-                        status = false
-                    };
-                }
-
-                // Valida y devuelve el resultado
-                if (idUsuarioActualizado != 0)
+                if (resultado == 1)
                 {
                     return new
                     {
@@ -457,7 +445,6 @@ namespace PROYECTKEY.Modelo
                 };
             }
         }
-
 
         //FUNCION DE ELIMINAR UN USUARIO
         public static dynamic EliminarUsuarioId(int idUsuario)

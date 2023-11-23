@@ -7,8 +7,7 @@ namespace PROYECTKEY.Modelo
     public static class ClaseProducto
     {
         //CADENA DE CONEXION 
-        public static string cadena = "Server=APIKEYLOOKEY.mssql.somee.com\r\n;Database=APIKEYLOOKEY;User Id=Derek_SQLLogin_1;Password=w3smbf9an6;";
-
+        public static string cadena = "Server=PPROYECT_KEY.mssql.somee.com\r\n;Database=PROYECT_KEY\r\n;User Id=Derek_SQLLogin_1;Password=w3smbf9an6;";
         public static string expecion = "";
 
 
@@ -235,7 +234,7 @@ namespace PROYECTKEY.Modelo
                 return new { mensaje = "Error al eliminar el producto", status = false, error = error.Message };
             }
         }
-   
+
         // FUNCION DE TRAER TODOS LOS PRODUCTOS
         public static dynamic TodosProductos()
         {
@@ -289,6 +288,55 @@ namespace PROYECTKEY.Modelo
             {
                 Console.WriteLine("Error no trae todos los productos: " + error.Message);
                 return new { mensaje = $"Error no trae todos los productos: {error.Message}", status = false, error = error.Message };
+            }
+        }
+
+        // FUNCION DE TRAER TODAS LAS CATEGORIAS
+        public static dynamic TodasCategorias()
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(cadena))
+                {
+                    connection.Open();
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter("dbo.ListarTodasCategorias", connection))
+                    {
+                        adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+
+                        DataTable dataTable = new DataTable();
+                        adapter.Fill(dataTable);
+
+                        if (dataTable.Rows.Count > 0)
+                        {
+                            Console.WriteLine("Traen todos las Categorias");
+
+                            List<object> categoria = new List<object>();
+
+                            foreach (DataRow row in dataTable.Rows)
+                            {
+                                categoria.Add(new
+                                {
+                                    idCategoria = row["idCategoria"],
+                                    nombre = row["Nombre"],
+
+                                });
+                            }
+
+                            return new { mensaje = "Categorias obtenidos con éxito", status = true, categoria = new { categoria } };
+                        }
+                        else
+                        {
+                            Console.WriteLine("No encontraron todos los categorias");
+                            return new { mensaje = "No se encontraron categorias", status = false, productos = new List<object>() };
+                        }
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                Console.WriteLine("Error no trae todos los categorias: " + error.Message);
+                return new { mensaje = $"Error no trae todos los categorias: {error.Message}", status = false, error = error.Message };
             }
         }
 

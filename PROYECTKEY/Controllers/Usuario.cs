@@ -14,18 +14,16 @@ namespace PROYECTKEY.Controllers
     [ApiController]
     [Route("api")]
     public class Usuario : ControllerBase
-    { 
-        
-        
-      /// <summary>
-      /// Método para registrar un nuevo usuario.
-      /// </summary>
-      /// <param name="nombreUsuario">Nombre del usuario.</param>
-      /// <param name="apellido">Apellido del usuario.</param>
-      /// <param name="email">Correo electrónico del usuario.</param>
-      /// <param name="password">Contraseña del usuario.</param>
-      /// <param name="idRol">Identificador del rol del usuario.</param>
-      /// <returns>Respuesta HTTP indicando el éxito o fracaso del registro.</returns>  
+    {
+        /// <summary>
+        /// Método para registrar un nuevo usuario.
+        /// </summary>
+        /// <param name="nombreUsuario">Nombre del usuario.</param>
+        /// <param name="apellido">Apellido del usuario.</param>
+        /// <param name="email">Correo electrónico del usuario.</param>
+        /// <param name="password">Contraseña del usuario.</param>
+        /// <param name="idRol">Identificador del rol del usuario.</param>
+        /// <returns>Respuesta HTTP indicando el éxito o fracaso del registro.</returns>  
         [HttpPost]
         [Route("usuario/registrarUsuario")]
         public ContentResult RegistrarUsuario(string nombreUsuario, string apellido, string email, string password, int idRol)
@@ -71,7 +69,7 @@ namespace PROYECTKEY.Controllers
         /// <returns>Respuesta de inicio de sesión.</returns>
         [HttpPost]
         [Route("usuario/login")]
-        public ContentResult usuarioLogin( string email, string password)
+        public ContentResult usuarioLogin(string email, string password)
         {
             try
 
@@ -105,27 +103,23 @@ namespace PROYECTKEY.Controllers
 
 
         /// <summary>
-        /// Actualiza un producto existente.
+        /// Actualizar el usuario
         /// </summary>
-        /// <param name="id">ID del producto a actualizar.</param>
-        /// <param name="nombre">Nuevo nombre del producto.</param>
-        /// <param name="descripcion">Nueva descripción del producto.</param>
-        /// <param name="precio">Nuevo precio del producto.</param>
-        /// <param name="stock">Nueva cantidad en stock del producto.</param>
-        /// <param name="vendedor_idVendedor">Nuevo ID del vendedor asociado.</param>
-        /// <param name="categoria_idCategoria">Nuevo ID de la categoría del producto.</param>
-        /// <param name="imagen">Nueva imagen del producto como bytes.</param>
-        /// <returns>Respuesta HTTP con el resultado.</returns>  
+        /// <param name="id"></param>
+        /// <param name="nombreUsuario"></param>
+        /// <param name="apellido"></param>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <param name="idRol"></param>
+        /// <returns></returns>
         [HttpPut]
         [Route("usuario/actualizarUsuario/{id}")]
-        public ContentResult ActualizarProducto(int id, string nombreUsuario, string apellido, string email, string password, int idRol)
+        public ContentResult ActualizarUsuario(int id, string nombreUsuario, string apellido, string email, string password, int idRol)
         {
             try
             {
-
                 // Llama al modelo para agregar o actualizar el producto
                 dynamic respuesta = ClaseUsuario.ActualizarUsuario(id, nombreUsuario, apellido, email, password, idRol);
-
 
                 // Crea una respuesta HTTP
                 var response = new ContentResult();
@@ -233,7 +227,7 @@ namespace PROYECTKEY.Controllers
                 };
             }
 
-          
+
         }
 
 
@@ -272,7 +266,7 @@ namespace PROYECTKEY.Controllers
                     ContentType = "application/json"
                 };
             }
-          
+
         }
 
         /// <summary>

@@ -83,7 +83,7 @@ namespace PROYECTKEY.Controllers
             }
             catch (Exception e)
             {
-                 return new ContentResult
+                return new ContentResult
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Content = JsonConvert.SerializeObject(new { status = false, mensaje = $"Error al agregar producto: {e.Message}" }),
@@ -111,7 +111,7 @@ namespace PROYECTKEY.Controllers
         {
             try
             {
-                
+
                 // Validaciones
                 if (id <= 0 || string.IsNullOrEmpty(nombre) || precio <= 0)
                 {
@@ -201,7 +201,7 @@ namespace PROYECTKEY.Controllers
                     response.ContentType = "application/json";
                 }
 
-                return response; 
+                return response;
             }
             catch (Exception e)
             {
@@ -220,7 +220,6 @@ namespace PROYECTKEY.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("producto/todosProductos")]
-
         public ContentResult TodosProductos()
         {
             try
@@ -258,13 +257,60 @@ namespace PROYECTKEY.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Trae todas las categorias
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("categoria/todasCategorias")]
+
+        public ContentResult ListarTodasCategorias()
+        {
+            try
+            {
+                dynamic respuesta = ClaseProducto.TodasCategorias();
+
+                // Crea una respuesta HTTP
+                var response = new ContentResult();
+
+                if (respuesta.status == true)
+                {
+                    // Código 200 si el registro es exitoso
+                    response.StatusCode = (int)HttpStatusCode.OK;
+                    response.Content = JsonConvert.SerializeObject(respuesta);
+                    response.ContentType = "application/json";
+                }
+                else
+                {
+                    // Código 400 si hay un error en el registro
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Content = JsonConvert.SerializeObject(new { status = false, mensaje = "Error: no se encontró la categoria" });
+                    response.ContentType = "application/json";
+                }
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                return new ContentResult
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Content = JsonConvert.SerializeObject(new { status = false, mensaje = $"Error al obtener filtrar por categoria: {e.Message}" }),
+                    ContentType = "application/json"
+                };
+
+            }
+        }
+
+
         /// <summary>
         /// Trae el nombre de la categoria 
         /// </summary>
         /// <param name="nombreCategoria"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("producto/filtrarPorCategoria/{nombreCategoria}")]
+        [Route("categoria/filtrarPorCategoria/{nombreCategoria}")]
 
         public ContentResult FiltrarPorCategoria(string nombreCategoria)
         {
